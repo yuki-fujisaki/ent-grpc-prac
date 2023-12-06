@@ -1,23 +1,50 @@
 package main
 
 import (
+	"context"
+	"ent-grpc-prac/ent"
 	"log"
-	"net"
 
-	"google.golang.org/grpc"
+	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
 
-type server struct{}
-
 func main() {
-	listen, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+	entOptions := []ent.Option{}
+
+	// 発行されるSQLをロギングするなら
+	entOptions = append(entOptions, ent.Debug())
+
+	// サンプルなのでここにハードコーディングしてます。
+	mc := mysql.Config{
+		User:                 "user",
+		DBName:               "ent-grpc-prac-mysql",
+		Passwd:               "password",
+		Net:                  "tcp",
+		Addr:                 "mysql:3306",
+		AllowNativePasswords: true,
+		ParseTime:            true,
 	}
 
-	s := grpc.NewServer()
+	var client *ent.Client
+	var err error
+	for i := 0; i < 10; i++ {
+		client, err = ent.Open("mysql", mc.FormatDSN(), entOptions...)
+		if err == nil {
+			break
+		}
+		log.Printf("Error open mysql ent client: %v\n", err)
+		time.Sleep(time.Second * 5)
+	}
+	if err != nil {
+		log.Fatalf("Error open mysql ent client: %v\n", err)
+	}
 
-	if err := s.Serve(listen); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+	defer client.Close()
+
+	// Run the auto migration tool.
+	if err := client.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
 	}
 }

@@ -4,7 +4,7 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: test
+      MYSQL_DATABASE: ent-grpc-prac-mysql
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
