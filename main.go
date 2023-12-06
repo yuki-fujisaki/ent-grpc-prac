@@ -5,8 +5,6 @@ import (
 	"ent-grpc-prac/ent"
 	"log"
 
-	"time"
-
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -27,16 +25,7 @@ func main() {
 		ParseTime:            true,
 	}
 
-	var client *ent.Client
-	var err error
-	for i := 0; i < 10; i++ {
-		client, err = ent.Open("mysql", mc.FormatDSN(), entOptions...)
-		if err == nil {
-			break
-		}
-		log.Printf("Error open mysql ent client: %v\n", err)
-		time.Sleep(time.Second * 5)
-	}
+	client, err := ent.Open("mysql", mc.FormatDSN(), entOptions...)
 	if err != nil {
 		log.Fatalf("Error open mysql ent client: %v\n", err)
 	}
