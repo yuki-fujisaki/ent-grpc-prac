@@ -4,8 +4,15 @@ package server;
 
 option go_package = "/pkg";
 
+import "google/api/annotations.proto";
+
 service UserService {
-  rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse);
+  rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse)
+  {
+    option (google.api.http) = {
+      get: "/users"
+    };
+  };
 }
 
 message GetAllUsersRequest {}
