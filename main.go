@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -13,8 +14,31 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"ent-grpc-prac/ent"
+	gw "ent-grpc-prac/gw"
 	entgrpcpracpb "ent-grpc-prac/pkg/protos"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+
+	"google.golang.org/grpc/credentials/insecure"
 )
+
+func startHTTPServer(grpcPort, httpPort int) {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err := gw.RegisterUserServiceHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", grpcPort), opts)
+	if err != nil {
+		log.Fatalf("Failed to start HTTP gateway: %v", err)
+	}
+
+	log.Printf("start HTTP server port: %v", httpPort)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", httpPort), mux); err != nil {
+		log.Fatalf("Failed to serve HTTP server: %v", err)
+	}
+}
 
 type myServer struct {
 	entgrpcpracpb.UnimplementedUserServiceServer
@@ -88,22 +112,26 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	port := 8080
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	grpcPort := 8080
+	httpPort := 8081 // HTTPサーバー用のポートを設定
+
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		panic(err)
 	}
 
 	s := grpc.NewServer()
-
 	entgrpcpracpb.RegisterUserServiceServer(s, NewMyServer(mc))
-
 	reflection.Register(s)
 
 	go func() {
-		log.Printf("start gRPC server port: %v", port)
-		s.Serve(listener)
+		log.Printf("start gRPC server port: %v", grpcPort)
+		if err := s.Serve(listener); err != nil {
+			log.Fatalf("Failed to serve gRPC server: %v", err)
+		}
 	}()
+
+	go startHTTPServer(grpcPort, httpPort) // HTTPサーバーを非同期で起動
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

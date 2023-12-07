@@ -6,12 +6,14 @@ Package pkg is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package pkg
+package gw
 
 import (
 	"context"
 	"io"
 	"net/http"
+
+	entgrpcpracpb "ent-grpc-prac/pkg/protos"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
@@ -31,8 +33,8 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_UserService_GetAllUsers_0(ctx context.Context, marshaler runtime.Marshaler, client UserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetAllUsersRequest
+func request_UserService_GetAllUsers_0(ctx context.Context, marshaler runtime.Marshaler, client entgrpcpracpb.UserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq entgrpcpracpb.GetAllUsersRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.GetAllUsers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -40,8 +42,8 @@ func request_UserService_GetAllUsers_0(ctx context.Context, marshaler runtime.Ma
 
 }
 
-func local_request_UserService_GetAllUsers_0(ctx context.Context, marshaler runtime.Marshaler, server UserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetAllUsersRequest
+func local_request_UserService_GetAllUsers_0(ctx context.Context, marshaler runtime.Marshaler, server entgrpcpracpb.UserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq entgrpcpracpb.GetAllUsersRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.GetAllUsers(ctx, &protoReq)
@@ -53,7 +55,7 @@ func local_request_UserService_GetAllUsers_0(ctx context.Context, marshaler runt
 // UnaryRPC     :call UserServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterUserServiceHandlerFromEndpoint instead.
-func RegisterUserServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server UserServiceServer) error {
+func RegisterUserServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server entgrpcpracpb.UserServiceServer) error {
 
 	mux.Handle("GET", pattern_UserService_GetAllUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -111,7 +113,7 @@ func RegisterUserServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.Se
 // RegisterUserServiceHandler registers the http handlers for service UserService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
 func RegisterUserServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterUserServiceHandlerClient(ctx, mux, NewUserServiceClient(conn))
+	return RegisterUserServiceHandlerClient(ctx, mux, entgrpcpracpb.NewUserServiceClient(conn))
 }
 
 // RegisterUserServiceHandlerClient registers the http handlers for service UserService
@@ -119,7 +121,7 @@ func RegisterUserServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "UserServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "UserServiceClient" to call the correct interceptors.
-func RegisterUserServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client UserServiceClient) error {
+func RegisterUserServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client entgrpcpracpb.UserServiceClient) error {
 
 	mux.Handle("GET", pattern_UserService_GetAllUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
