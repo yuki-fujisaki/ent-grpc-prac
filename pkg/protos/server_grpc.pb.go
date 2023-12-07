@@ -4,7 +4,7 @@
 // - protoc             v4.25.1
 // source: protos/server.proto
 
-package protos
+package pkg
 
 import (
 	context "context"

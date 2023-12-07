@@ -38,8 +38,16 @@ func (s *myServer) GetAllUsers(ctx context.Context, req *entgrpcpracpb.GetAllUse
 	return res, nil
 }
 
-func NewMyServer() *myServer {
-	return &myServer{}
+func NewMyServer(mc mysql.Config, entOptions ...ent.Option) *myServer {
+	client, err := ent.Open("mysql", mc.FormatDSN(), entOptions...)
+	if err != nil {
+		log.Fatalf("Error open mysql ent client: %v\n", err)
+	}
+	return &myServer{
+		UserService: &UserService{
+			ent: client,
+		},
+	}
 }
 
 type (
@@ -64,7 +72,7 @@ func main() {
 		DBName:               "ent-grpc-prac-mysql",
 		Passwd:               "password",
 		Net:                  "tcp",
-		Addr:                 "mysql:3306",
+		Addr:                 "localhost" + ":" + "3333",
 		AllowNativePasswords: true,
 		ParseTime:            true,
 	}
@@ -88,7 +96,7 @@ func main() {
 
 	s := grpc.NewServer()
 
-	entgrpcpracpb.RegisterUserServiceServer(s, NewMyServer())
+	entgrpcpracpb.RegisterUserServiceServer(s, NewMyServer(mc))
 
 	reflection.Register(s)
 
